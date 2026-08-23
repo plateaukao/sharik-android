@@ -50,7 +50,7 @@ class MainActivity : Activity() {
             AlertDialog.Builder(this).setTitle("Clear history?")
                 .setMessage("Shared files themselves are not touched.")
                 .setPositiveButton("Clear") { _, _ -> store.clearHistory(); refresh() }
-                .setNegativeButton("Cancel", null).show()
+                .setNegativeButton("Cancel", null).show().styled()
         }
         historyView.adapter = HistoryAdapter()
         historyView.setOnItemClickListener { _, _, pos, _ -> share(history[pos]) }
@@ -136,7 +136,7 @@ class MainActivity : Activity() {
             }
             .setNeutralButton("Paste") { _, _ -> }
             .setNegativeButton("Cancel", null)
-            .show().also { d ->
+            .show().styled().also { d ->
                 d.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener {
                     val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                     cm.primaryClip?.getItemAt(0)?.coerceToText(this)?.let { edit.setText(it) }
@@ -149,7 +149,7 @@ class MainActivity : Activity() {
             AlertDialog.Builder(this).setTitle("File no longer available")
                 .setMessage("The app that shared it only granted temporary access. Share it again from that app, or pick it with Share file….")
                 .setPositiveButton("Remove from history") { _, _ -> store.forget(item); refresh() }
-                .setNegativeButton("Close", null).show()
+                .setNegativeButton("Close", null).show().styled()
             return
         }
         store.remember(item); refresh()
@@ -165,7 +165,7 @@ class MainActivity : Activity() {
             window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        dialog.show()
+        dialog.show(); dialog.styled()
         session.start(object : ShareSession.Listener {
             override fun onStarted(port: Int) {
                 val ips = ReceiveSession.localIPv4()
@@ -213,7 +213,7 @@ class MainActivity : Activity() {
             window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        dialog.show()
+        dialog.show(); dialog.styled()
         status.text = "Starting…"
         session.start(listener)
     }
@@ -234,7 +234,7 @@ class MainActivity : Activity() {
                 (getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager).setPrimaryClip(ClipData.newPlainText("Sharik", text))
                 Toast.makeText(this, "Copied", Toast.LENGTH_SHORT).show()
             }
-            .setNegativeButton("Close", null).show()
+            .setNegativeButton("Close", null).show().styled()
     }
 
     // ---- small things -------------------------------------------------------------
@@ -243,14 +243,28 @@ class MainActivity : Activity() {
         val edit = EditText(this).apply { setText(store.deviceName); setSelectAllOnFocus(true); inputType = InputType.TYPE_CLASS_TEXT }
         AlertDialog.Builder(this).setTitle("Device name shown to senders").setView(pad(edit))
             .setPositiveButton("Save") { _, _ -> edit.text.toString().trim().takeIf { it.isNotEmpty() }?.let { store.deviceName = it }; refresh() }
-            .setNegativeButton("Cancel", null).show()
+            .setNegativeButton("Cancel", null).show().styled()
     }
 
     private fun itemMenu(item: ShareItem) {
         AlertDialog.Builder(this).setTitle(item.name)
             .setItems(arrayOf("Share", "Remove from history")) { _, which ->
                 if (which == 0) share(item) else { store.forget(item); refresh() }
-            }.show()
+            }.show().styled()
+    }
+
+    /** OEM themes (Onyx) ignore dialog button styles and can render the text invisible; force it. */
+    private fun AlertDialog.styled(): AlertDialog {
+        val brand = getColor(R.color.brand)
+        for (which in intArrayOf(AlertDialog.BUTTON_POSITIVE, AlertDialog.BUTTON_NEGATIVE, AlertDialog.BUTTON_NEUTRAL)) {
+            getButton(which)?.apply {
+                setTextColor(brand)
+                setBackgroundResource(android.R.color.transparent)
+                isAllCaps = false
+                stateListAnimator = null
+            }
+        }
+        return this
     }
 
     private fun pad(v: View): View {
