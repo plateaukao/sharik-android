@@ -10,9 +10,9 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
         <Button android:id="@+id/share_file" android:layout_width="0dp" android:layout_weight="1"
-            android:layout_height="wrap_content" android:layout_marginEnd="8dp" android:text="Share file…" />
+            android:layout_height="wrap_content" android:layout_marginEnd="8dp" android:text="Share file" />
         <Button android:id="@+id/share_text" android:layout_width="0dp" android:layout_weight="1"
-            android:layout_height="wrap_content" android:layout_marginEnd="8dp" android:text="Share text…" />
+            android:layout_height="wrap_content" android:layout_marginEnd="8dp" android:text="Share text" />
         <Button android:id="@+id/receive" android:layout_width="0dp" android:layout_weight="1"
             android:layout_height="wrap_content" android:text="Receive" />
     </LinearLayout>
